@@ -17,9 +17,17 @@ class SimpleZigguratSampler:
         return cls(dist, buckets=buckets)
 
     @staticmethod
-    def _create_buckets(dist: Distribution, n: int) -> list[int]:
+    def _create_buckets(dist: Distribution, n: int, upper: float) -> list[int]:
         """Create the buckets for a Ziggurat Sampler."""
-        ...
+        # First, we choose evenly-spaced buckets in the range [0, upper].
+        buckets = [0]
+        for i in range(1, n):
+            buckets.append(i * upper / n)
+
+        # We then find the height of the distribution at each bucket.
+        heights = [dist.pdf(x) for x in buckets]
+
+
 
     def draw(self) -> float:
         """Draw a sample from the distribution."""
