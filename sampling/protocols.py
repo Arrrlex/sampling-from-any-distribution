@@ -5,5 +5,11 @@ class Distribution(Protocol):
         ...
 
 class Sampler(Protocol):
+    total_area: float
+    domain: tuple[float, float]
+
+    def f(self, x: float) -> float:
+        ...
+
     def draw(self) -> float:
         ...
