@@ -15,6 +15,7 @@ class UniformSampler:
         width = self.upper - self.lower
         return self.lower + random.random() * width
 
+
 @dataclass
 class FunctionSampler:
     func: Callable[[], float]

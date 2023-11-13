@@ -1,14 +1,6 @@
 from sampling.protocols import Sampler
-import numpy as np
 import random
 import math
-import matplotlib.pyplot as plt
-from scipy.stats import norm
-import imageio
-import os
-from tqdm import tqdm
-from dataclasses import dataclass
-from typing import Callable
 
 
 class TriangleSampler(Sampler):
@@ -75,7 +67,9 @@ class ComposedSampler(Sampler):
     def __init__(self, samplers):
         # Check if the domains of the samplers align properly
         for i in range(len(samplers) - 1):
-            assert samplers[i].domain[1] == samplers[i + 1].domain[0], "Domains of consecutive samplers must align."
+            assert (
+                samplers[i].domain[1] == samplers[i + 1].domain[0]
+            ), "Domains of consecutive samplers must align."
 
         self.samplers = samplers
         # Calculate the total area of all samplers combined
@@ -99,8 +93,9 @@ class ComposedSampler(Sampler):
             if r <= cumulative_area:
                 return sampler.draw()
 
+
 def piecewise_linear_sampler(points):
     samplers = []
     for i in range(len(points) - 1):
-        samplers.append(create_segment_sampler(points[i], points[i+1]))
+        samplers.append(create_segment_sampler(points[i], points[i + 1]))
     return ComposedSampler(samplers)
