@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-import numpy as np
+import jax.numpy as np
 
 
 @dataclass
@@ -27,6 +27,6 @@ class Normal:
         return self.std ** -2
 
     def pdf(self, x):
-        exponent = -2 * self.beta * (x - self.mean) ** 2
-        multiplier = self.beta / np.sqrt(2 * np.pi)
-        return multiplier * np.exp(exponent)
+        exponent = -0.5 * self.beta * (x - self.mean) ** 2
+        denominator = self.std * np.sqrt(2 * np.pi)
+        return np.exp(exponent) / denominator
