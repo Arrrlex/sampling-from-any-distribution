@@ -1,5 +1,8 @@
 from sampling.protocols import Sampler
-from sampling.linear_samplers import piecewise_linear_sampler, max_piecewise_linear_function
+from sampling.linear_samplers import (
+    piecewise_linear_sampler,
+    max_piecewise_linear_function,
+)
 import jax
 import jax.numpy as jnp
 from typing import Callable
@@ -72,6 +75,7 @@ def piecewise_linear_envelope_naive(
     y_samples = f(x_samples)
 
     return piecewise_linear_sampler(list(zip(x_samples, y_samples)))
+
 
 def piecewise_linear_envelope_max(
     f: Callable,

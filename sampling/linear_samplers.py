@@ -32,6 +32,7 @@ class TriangleSampler(Sampler, PiecewiseLinearFunction):
 
 class TranslatedSampler(Sampler):
     """A sampler that adds a rectangle of height h to the original distribution."""
+
     def __init__(self, sampler, h):
         self.sampler = sampler
         self.h = h
@@ -112,10 +113,14 @@ def piecewise_linear_sampler(points):
     return ComposedSampler(samplers)
 
 
-def max_piecewise_linear_function(func1: PiecewiseLinearFunction, func2: PiecewiseLinearFunction) -> ComposedSampler:
+def max_piecewise_linear_function(
+    func1: PiecewiseLinearFunction, func2: PiecewiseLinearFunction
+) -> ComposedSampler:
     """Return a PiecewiseLinearFunction representing the pointwise maximum of two PiecewiseLinearFunctions."""
     # xs should use jnp functions, not python
-    xs = jnp.unique(jnp.concatenate([jnp.array(func1.points)[:, 0], jnp.array(func2.points)[:, 0]]))
+    xs = jnp.unique(
+        jnp.concatenate([jnp.array(func1.points)[:, 0], jnp.array(func2.points)[:, 0]])
+    )
     xs = jnp.sort(xs)
     ys = [max(func1.f(x), func2.f(x)) for x in xs]
     return piecewise_linear_sampler(list(zip(xs, ys)))
