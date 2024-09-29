@@ -1,7 +1,7 @@
 from sampling.protocols import Sampler
 from sampling.linear_samplers import piecewise_linear_sampler
 import jax
-import numpy as np
+import jax.numpy as jnp
 from typing import Callable
 
 
@@ -18,7 +18,7 @@ def piecewise_linear_envelope(
 ) -> Sampler:
     xmin, xmax = domain
     f_grad = jax.grad(f)
-    x_samples = np.linspace(xmin, xmax, n)  # Equally spaced samples in the domain
+    x_samples = jnp.linspace(xmin, xmax, n)  # Equally spaced samples in the domain
     ys = f(x_samples)
     y_grads = [f_grad(x) for x in x_samples]
 
