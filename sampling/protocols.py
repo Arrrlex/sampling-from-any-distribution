@@ -15,3 +15,9 @@ class Sampler(Protocol):
 
     def draw(self) -> float:
         ...
+
+class PiecewiseLinearFunction(Protocol):
+    points: list[tuple[float, float]]   
+
+    def f(self, x: float) -> float:
+        ...

@@ -1,5 +1,5 @@
 from sampling.protocols import Sampler
-from sampling.linear_samplers import piecewise_linear_sampler
+from sampling.linear_samplers import piecewise_linear_sampler, max_piecewise_linear_function
 import jax
 import jax.numpy as jnp
 from typing import Callable
@@ -10,7 +10,7 @@ def naive_envelope(domain, ymax=1) -> Sampler:
     return piecewise_linear_sampler([(xmin, ymax), (xmax, ymax)])
 
 
-def piecewise_linear_envelope(
+def piecewise_linear_envelope_using_tangents(
     f: Callable,
     domain: tuple[float, float],
     n: int,
@@ -57,3 +57,30 @@ def piecewise_linear_envelope(
             envelope_points[i] = (x, y)
 
     return piecewise_linear_sampler(envelope_points)
+
+
+def piecewise_linear_envelope_naive(
+    f: Callable,
+    domain: tuple[float, float],
+    n: int,
+) -> Sampler:
+    """
+    Create a piecewise linear estimate for f by choosing n points in the domain and joining them up.
+    """
+    xmin, xmax = domain
+    x_samples = jnp.linspace(xmin, xmax, n)
+    y_samples = f(x_samples)
+
+    return piecewise_linear_sampler(list(zip(x_samples, y_samples)))
+
+def piecewise_linear_envelope_max(
+    f: Callable,
+    domain: tuple[float, float],
+    n: int,
+) -> Sampler:
+    """
+    Create a piecewise linear envelope for f by choosing n points in the domain and joining them up.
+    """
+    envelope1 = piecewise_linear_envelope_using_tangents(f, domain, n)
+    envelope2 = piecewise_linear_envelope_naive(f, domain, n)
+    return max_piecewise_linear_function(envelope1, envelope2)

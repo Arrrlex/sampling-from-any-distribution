@@ -1,9 +1,10 @@
-from sampling.protocols import Sampler
+from sampling.protocols import Sampler, PiecewiseLinearFunction
 import random
 import math
+import jax.numpy as jnp
 
 
-class TriangleSampler(Sampler):
+class TriangleSampler(Sampler, PiecewiseLinearFunction):
     def __init__(self, x1, y1, x2, y2):
         assert y1 == 0 or y2 == 0, "One of y1 or y2 must be 0"
         self.domain = (x1, x2)
@@ -13,6 +14,7 @@ class TriangleSampler(Sampler):
         self.total_area = 0.5 * self.base * self.height
         self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
         self.slope = slope
+        self.points = [(x1, y1), (x2, y2)]
 
     def f(self, x):
         if self.x1 <= x <= self.x2:
@@ -29,6 +31,7 @@ class TriangleSampler(Sampler):
 
 
 class TranslatedSampler(Sampler):
+    """A sampler that adds a rectangle of height h to the original distribution."""
     def __init__(self, sampler, h):
         self.sampler = sampler
         self.h = h
@@ -36,6 +39,9 @@ class TranslatedSampler(Sampler):
         # Total area is the sum of the original area and the area of the added rectangle.
         self.added_area = (self.domain[1] - self.domain[0]) * h
         self.total_area = sampler.total_area + self.added_area
+
+        if hasattr(sampler, "points"):
+            self.points = [(x, y + h) for x, y in sampler.points]
 
     def f(self, x):
         return self.sampler.f(x) + self.h
@@ -77,6 +83,11 @@ class ComposedSampler(Sampler):
         # The domain of the composed sampler
         self.domain = (samplers[0].domain[0], samplers[-1].domain[1])
 
+        if all(hasattr(sampler, "points") for sampler in samplers):
+            self.points = samplers[0].points[:]
+            for sampler in samplers[1:]:
+                self.points.extend(sampler.points[1:])
+
     def f(self, x):
         # Find the appropriate sampler for the given x and use its f function
         for sampler in self.samplers:
@@ -99,3 +110,12 @@ def piecewise_linear_sampler(points):
     for i in range(len(points) - 1):
         samplers.append(create_segment_sampler(points[i], points[i + 1]))
     return ComposedSampler(samplers)
+
+
+def max_piecewise_linear_function(func1: PiecewiseLinearFunction, func2: PiecewiseLinearFunction) -> ComposedSampler:
+    """Return a PiecewiseLinearFunction representing the pointwise maximum of two PiecewiseLinearFunctions."""
+    # xs should use jnp functions, not python
+    xs = jnp.unique(jnp.concatenate([jnp.array(func1.points)[:, 0], jnp.array(func2.points)[:, 0]]))
+    xs = jnp.sort(xs)
+    ys = [max(func1.f(x), func2.f(x)) for x in xs]
+    return piecewise_linear_sampler(list(zip(xs, ys)))
