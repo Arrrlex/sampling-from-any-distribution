@@ -14,7 +14,7 @@ def piecewise_linear_envelope(
     f: Callable,
     domain: tuple[float, float],
     n: int,
-    buffer: float = 0.5,
+    buffer: float = 0.0,
 ) -> Sampler:
     xmin, xmax = domain
     f_grad = jax.grad(f)
